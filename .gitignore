@@ -1,0 +1,33 @@
+# Dependency directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production builds
+client/dist/
+server/dist/
+
+# Local cache & data stores (Must be kept secure/offline)
+server/uploads/*
+!server/uploads/.gitkeep
+server/outputs/*
+!server/outputs/.gitkeep
+test_files/
+
+# Local environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Compiled shared types
+shared/*.js
+shared/*.d.ts
