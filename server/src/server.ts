@@ -23,7 +23,29 @@ const OUTPUTS_DIR = path.resolve(process.cwd(), 'outputs');
 await fs.mkdir(UPLOADS_DIR, { recursive: true });
 await fs.mkdir(OUTPUTS_DIR, { recursive: true });
 
-app.use(cors());
+// Configure strict CORS origin limits to prevent third-party website hijacking
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+if (process.env.ALLOWED_ORIGIN) {
+  allowedOrigins.push(process.env.ALLOWED_ORIGIN);
+}
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or local testing)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'));
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS Policy: Request from this origin is blocked.'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // In-Memory Storage for Session States
@@ -470,10 +492,10 @@ app.post('/api/clear/:sessionId', async (req, res) => {
   }
 });
 
-// Start Express
-app.listen(PORT, () => {
+// Start Express - Bind strictly to loopback interface 127.0.0.1 for local offline network security
+app.listen(PORT as number, '127.0.0.1', () => {
   console.log(`=========================================`);
-  console.log(`LSA Processing Server running offline`);
+  console.log(`LSA Processing Server running offline (secured to localhost)`);
   console.log(`Address: http://localhost:${PORT}`);
   console.log(`=========================================`);
 });
