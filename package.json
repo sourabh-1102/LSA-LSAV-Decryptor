@@ -4,6 +4,7 @@
   "description": "Offline LSA/LSAV Processing Suite Monorepo",
   "scripts": {
     "install:all": "npm install && npm install --prefix client && npm install --prefix server",
+    "postinstall": "npm install --prefix client && npm install --prefix server",
     "dev": "concurrently --kill-others \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix server && npm run build --prefix client"
   },
