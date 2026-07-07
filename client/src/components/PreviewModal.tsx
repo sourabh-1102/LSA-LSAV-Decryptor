@@ -184,7 +184,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                 <div className="w-full h-full flex items-center justify-center">
                   <img
                     key={activeFileId}
-                    src={`/api/preview/${api.getSessionId()}/${activeFileId}`}
+                    src={api.getPreviewUrl(activeFileId)}
                     alt={activeFile?.name}
                     className="max-h-[60vh] max-w-full object-contain rounded-lg border border-gray-900 shadow-2xl animate-fade-in"
                   />
@@ -193,7 +193,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                 <div className="w-full h-full flex items-center justify-center">
                   <video
                     key={activeFileId}
-                    src={`/api/preview/${api.getSessionId()}/${activeFileId}`}
+                    src={api.getPreviewUrl(activeFileId)}
                     controls
                     className="max-h-[60vh] max-w-full rounded-lg border border-gray-900 shadow-2xl bg-black animate-fade-in"
                   />
@@ -201,7 +201,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
               ) : isPdf ? (
                 <iframe
                   key={activeFileId}
-                  src={`/api/preview/${api.getSessionId()}/${activeFileId}`}
+                  src={api.getPreviewUrl(activeFileId)}
                   className="w-full h-[60vh] rounded-lg border border-gray-900 shadow-2xl bg-white animate-fade-in"
                 />
               ) : isLoading ? (

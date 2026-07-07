@@ -1,6 +1,5 @@
 import { FileRecord, SseMessage } from '../../../shared/types.js';
 
-// Helper to generate or retrieve session ID
 const SESSION_KEY = 'lsa_processor_session_id';
 export function getSessionId(): string {
   let id = localStorage.getItem(SESSION_KEY);
@@ -12,6 +11,9 @@ export function getSessionId(): string {
 }
 
 const sessionId = getSessionId();
+
+// Dynamic API base URL to allow client deployment on Netlify connecting to local server
+const API_BASE = (import.meta as any).env?.VITE_API_URL || ((import.meta as any).env?.DEV ? '' : 'http://localhost:3001');
 
 export const api = {
   getSessionId: () => sessionId,
@@ -36,7 +38,7 @@ export const api = {
 
       return new Promise<FileRecord[]>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `/api/upload`);
+        xhr.open('POST', `${API_BASE}/api/upload`);
         xhr.setRequestHeader('x-session-id', sessionId);
         xhr.setRequestHeader('x-file-id', record.id);
 
@@ -87,7 +89,7 @@ export const api = {
    * Fetch current session files list.
    */
   async getFiles(): Promise<FileRecord[]> {
-    const res = await fetch(`/api/files/${sessionId}`);
+    const res = await fetch(`${API_BASE}/api/files/${sessionId}`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Failed to retrieve session files' }));
       throw new Error(err.error || 'Failed to retrieve session files');
@@ -100,7 +102,7 @@ export const api = {
    * Remove a single file before processing.
    */
   async removeFile(fileId: string): Promise<FileRecord[]> {
-    const res = await fetch(`/api/remove/${sessionId}/${fileId}`, {
+    const res = await fetch(`${API_BASE}/api/remove/${sessionId}/${fileId}`, {
       method: 'DELETE',
     });
     if (!res.ok) {
@@ -115,7 +117,7 @@ export const api = {
    * Trigger processing queue on the server.
    */
   async startProcessing(): Promise<void> {
-    const res = await fetch(`/api/process/${sessionId}`, {
+    const res = await fetch(`${API_BASE}/api/process/${sessionId}`, {
       method: 'POST',
     });
     if (!res.ok) {
@@ -128,7 +130,7 @@ export const api = {
    * Request cancellation of the current processing batch.
    */
   async cancelProcessing(): Promise<void> {
-    const res = await fetch(`/api/cancel/${sessionId}`, {
+    const res = await fetch(`${API_BASE}/api/cancel/${sessionId}`, {
       method: 'POST',
     });
     if (!res.ok) {
@@ -141,7 +143,7 @@ export const api = {
    * Fetch text preview content for a processed file.
    */
   async getPreview(fileId: string): Promise<string> {
-    const res = await fetch(`/api/preview/${sessionId}/${fileId}`);
+    const res = await fetch(`${API_BASE}/api/preview/${sessionId}/${fileId}`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Preview unavailable' }));
       throw new Error(err.error || 'Preview unavailable');
@@ -154,7 +156,7 @@ export const api = {
    * Clear session uploads and outputs on server.
    */
   async clearSession(): Promise<void> {
-    const res = await fetch(`/api/clear/${sessionId}`, {
+    const res = await fetch(`${API_BASE}/api/clear/${sessionId}`, {
       method: 'POST',
     });
     if (!res.ok) {
@@ -167,14 +169,21 @@ export const api = {
    * Helper to get individual download URL.
    */
   getDownloadUrl(fileId: string): string {
-    return `/api/download/${sessionId}/${fileId}`;
+    return `${API_BASE}/api/download/${sessionId}/${fileId}`;
   },
 
   /**
    * Helper to get ZIP download URL.
    */
   getZipDownloadUrl(): string {
-    return `/api/download-zip/${sessionId}`;
+    return `${API_BASE}/api/download-zip/${sessionId}`;
+  },
+
+  /**
+   * Helper to get inline preview URL for media files.
+   */
+  getPreviewUrl(fileId: string): string {
+    return `${API_BASE}/api/preview/${sessionId}/${fileId}`;
   },
 
   /**
@@ -184,7 +193,7 @@ export const api = {
     onMessage: (msg: SseMessage) => void,
     onError: (err: Event) => void
   ): () => void {
-    const eventSource = new EventSource(`/api/events/${sessionId}`);
+    const eventSource = new EventSource(`${API_BASE}/api/events/${sessionId}`);
 
     eventSource.onmessage = (event) => {
       try {
@@ -199,7 +208,6 @@ export const api = {
       onError(err);
     };
 
-    // Return unsubscribe callback
     return () => {
       eventSource.close();
     };
